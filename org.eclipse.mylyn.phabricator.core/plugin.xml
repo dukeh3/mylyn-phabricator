@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="org.eclipse.mylyn.phabricator.repository"
+         name="%repository.name"
+         point="org.eclipse.mylyn.tasks.ui.repositories">
+      <connectorCore
+            class="org.eclipse.mylyn.internal.phabricator.core.TracRepositoryConnector"
+            id="phabricator"
+            name="%TracRepositoryConnector.name"/>
+      <taskListMigrator
+            class="org.eclipse.mylyn.internal.phabricator.core.TracTaskListMigrator">
+      </taskListMigrator>
+      <repositoryMigrator
+            class="org.eclipse.mylyn.internal.phabricator.core.TracRepositoryMigrator">
+      </repositoryMigrator>
+   </extension>
+   <extension
+         point="org.eclipse.mylyn.tasks.core.templates">
+      <repository
+            addAutomatically="false"
+            anonymous="true"
+            label="Edgewall"
+            repositoryKind="phabricator"
+            urlRepository="http://trac.edgewall.org"
+            version="TRAC_0_9"/>
+   </extension>
+</plugin>

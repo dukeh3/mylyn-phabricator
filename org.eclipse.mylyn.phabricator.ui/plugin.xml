@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<!--
+    Copyright (c) 2009 Steffen Pingel and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+         Steffen Pingel - initial API and implementation
+         Tasktop Technologies - improvements
+ -->
+<plugin>
+   <extension
+         id="org.eclipse.mylyn.phabricator.repository"
+         name="%repository.name"
+         point="org.eclipse.mylyn.tasks.ui.repositories">
+      <connectorUi
+            brandingIcon="icons/eview16/trac-icon.gif"
+            class="org.eclipse.mylyn.internal.phabricator.ui.TracConnectorUi"
+            id="trac"
+            name="%TracConnectorUi.name"
+            overlayIcon="icons/eview16/overlay-trac.gif"/>
+   </extension>
+   <extension
+         point="org.eclipse.mylyn.tasks.ui.editors">
+      <pageFactory
+            class="org.eclipse.mylyn.internal.phabricator.ui.editor.TracTaskEditorPageFactory"
+            id="org.eclipse.mylyn.phabricator.ui.pageFactory">
+      </pageFactory>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector            
+            class="org.eclipse.mylyn.internal.phabricator.ui.TracHyperlinkDetector"
+            id="org.eclipse.mylyn.phabricator.ui.hyperlinksDetectors.Trac"
+            name="%TracHyperlinkDetector.name"
+            targetId="org.eclipse.mylyn.tasks.ui.TaskEditor">
+      </hyperlinkDetector>
+   </extension>
+</plugin>

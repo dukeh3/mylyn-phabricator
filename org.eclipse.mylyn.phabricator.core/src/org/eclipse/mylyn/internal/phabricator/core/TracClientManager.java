@@ -116,7 +116,7 @@ public class TracClientManager implements IRepositoryListener {
 				}
 			}
 		} catch (Throwable e) {
-			StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN,
+			StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN,
 					"The Trac respository configuration cache could not be read", e)); //$NON-NLS-1$
 		} finally {
 			if (in != null) {
@@ -144,7 +144,7 @@ public class TracClientManager implements IRepositoryListener {
 				out.writeObject(clientDataByUrl.get(url));
 			}
 		} catch (IOException e) {
-			StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN,
+			StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN,
 					"The Trac respository configuration cache could not be written", e)); //$NON-NLS-1$
 		} finally {
 			if (out != null) {

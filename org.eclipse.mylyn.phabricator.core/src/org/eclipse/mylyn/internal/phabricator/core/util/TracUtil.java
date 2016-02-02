@@ -17,7 +17,7 @@ import java.net.URLEncoder;
 import java.util.Date;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearch;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
@@ -79,7 +79,7 @@ public class TracUtil {
 	}
 
 	public static IStatus createPermissionDeniedError(String repositoryUrl, String pluginId) {
-		return new RepositoryStatus(repositoryUrl, IStatus.ERROR, TracCorePlugin.ID_PLUGIN,
+		return new RepositoryStatus(repositoryUrl, IStatus.ERROR, PhabricatorCorePlugin.ID_PLUGIN,
 				RepositoryStatus.ERROR_PERMISSION_DENIED, Messages.TracUtil_Permission_denied);
 	}
 

@@ -11,9 +11,11 @@
 
 package org.eclipse.mylyn.internal.phabricator.core;
 
-import org.eclipse.mylyn.internal.phabricator.core.TracRepositoryConnector.TaskKind;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorRepositoryConnector.TaskKind;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracPriority;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.ITask.PriorityLevel;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskMapper;
@@ -28,6 +30,18 @@ public class TracTaskMapper extends TaskMapper {
 	public TracTaskMapper(TaskData taskData, ITracClient client) {
 		super(taskData);
 		this.client = client;
+	}
+
+	@Override
+	public boolean applyTo(@NonNull ITask task) {
+		System.out.println("TracTaskMapper.applyTo()");
+		return super.applyTo(task);
+	}
+
+	@Override
+	public boolean hasChanges(@NonNull ITask task) {
+		System.out.println("TracTaskMapper.hasChanges()");
+		return super.hasChanges(task);
 	}
 
 //	@Override
@@ -128,9 +142,9 @@ public class TracTaskMapper extends TaskMapper {
 		if (priority != null) {
 			if (client != null) {
 				TracPriority[] tracPriorities = client.getPriorities();
-				return TracRepositoryConnector.getTaskPriority(priority, tracPriorities);
+				return PhabricatorRepositoryConnector.getTaskPriority(priority, tracPriorities);
 			} else {
-				return TracRepositoryConnector.getTaskPriority(priority);
+				return PhabricatorRepositoryConnector.getTaskPriority(priority);
 			}
 		}
 		return null;

@@ -6,7 +6,7 @@
          name="%repository.name"
          point="org.eclipse.mylyn.tasks.ui.repositories">
       <connectorCore
-            class="org.eclipse.mylyn.internal.phabricator.core.TracRepositoryConnector"
+            class="org.eclipse.mylyn.internal.phabricator.core.PhabricatorRepositoryConnector"
             id="phabricator"
             name="%TracRepositoryConnector.name"/>
       <taskListMigrator
@@ -20,10 +20,20 @@
          point="org.eclipse.mylyn.tasks.core.templates">
       <repository
             addAutomatically="false"
-            anonymous="true"
-            label="Edgewall"
+            anonymous="false"
+            label="S02"
             repositoryKind="phabricator"
-            urlRepository="http://trac.edgewall.org"
-            version="TRAC_0_9"/>
+            urlRepository="http://s02.labs.h3.se"
+            version="XXX"/>
    </extension>
+      <extension
+         point="org.eclipse.mylyn.tasks.core.templates">
+      <repository
+            addAutomatically="false"
+            anonymous="false"
+            label="ZZZ"
+            repositoryKind="phabricator"
+            urlRepository="http://s02.labs.h3.se"
+            version="XXX"/>
+   </extension>  
 </plugin>

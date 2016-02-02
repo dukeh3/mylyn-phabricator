@@ -14,7 +14,7 @@ package org.eclipse.mylyn.internal.phabricator.core.client;
 /**
  * @author Steffen Pingel
  */
-public class TracSslCertificateException extends TracException {
+public class TracSslCertificateException extends PhabricatorException {
 
 	private static final long serialVersionUID = -693879319319751584L;
 

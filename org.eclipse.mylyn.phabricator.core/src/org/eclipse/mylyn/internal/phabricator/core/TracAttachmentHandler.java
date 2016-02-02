@@ -34,9 +34,9 @@ import org.eclipse.mylyn.tasks.core.data.UnsubmittedTaskAttachment;
  */
 public class TracAttachmentHandler extends AbstractTaskAttachmentHandler {
 
-	private final TracRepositoryConnector connector;
+	private final PhabricatorRepositoryConnector connector;
 
-	public TracAttachmentHandler(TracRepositoryConnector connector) {
+	public TracAttachmentHandler(PhabricatorRepositoryConnector connector) {
 		this.connector = connector;
 	}
 
@@ -47,7 +47,7 @@ public class TracAttachmentHandler extends AbstractTaskAttachmentHandler {
 		String filename = mapper.getFileName();
 		if (filename == null || filename.length() == 0) {
 			throw new CoreException(new RepositoryStatus(repository.getRepositoryUrl(), IStatus.ERROR,
-					TracCorePlugin.ID_PLUGIN, RepositoryStatus.ERROR_REPOSITORY, "Attachment download from " //$NON-NLS-1$
+					PhabricatorCorePlugin.ID_PLUGIN, RepositoryStatus.ERROR_REPOSITORY, "Attachment download from " //$NON-NLS-1$
 							+ repository.getRepositoryUrl() + " failed, missing attachment filename.")); //$NON-NLS-1$
 		}
 
@@ -60,7 +60,7 @@ public class TracAttachmentHandler extends AbstractTaskAttachmentHandler {
 		} catch (OperationCanceledException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new CoreException(TracCorePlugin.toStatus(e, repository));
+			throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 		} finally {
 			monitor.done();
 		}
@@ -69,9 +69,9 @@ public class TracAttachmentHandler extends AbstractTaskAttachmentHandler {
 	@Override
 	public void postContent(TaskRepository repository, ITask task, AbstractTaskAttachmentSource source, String comment,
 			TaskAttribute attachmentAttribute, IProgressMonitor monitor) throws CoreException {
-		if (!TracRepositoryConnector.hasAttachmentSupport(repository, task)) {
+		if (!PhabricatorRepositoryConnector.hasAttachmentSupport(repository, task)) {
 			throw new CoreException(new RepositoryStatus(repository.getRepositoryUrl(), IStatus.INFO,
-					TracCorePlugin.ID_PLUGIN, RepositoryStatus.ERROR_REPOSITORY,
+					PhabricatorCorePlugin.ID_PLUGIN, RepositoryStatus.ERROR_REPOSITORY,
 					"Attachments are not supported by this repository access type")); //$NON-NLS-1$
 		}
 
@@ -91,7 +91,7 @@ public class TracAttachmentHandler extends AbstractTaskAttachmentHandler {
 			} catch (OperationCanceledException e) {
 				throw e;
 			} catch (Exception e) {
-				throw new CoreException(TracCorePlugin.toStatus(e, repository));
+				throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 			}
 		} finally {
 			monitor.done();
@@ -100,12 +100,12 @@ public class TracAttachmentHandler extends AbstractTaskAttachmentHandler {
 
 	@Override
 	public boolean canGetContent(TaskRepository repository, ITask task) {
-		return TracRepositoryConnector.hasAttachmentSupport(repository, task);
+		return PhabricatorRepositoryConnector.hasAttachmentSupport(repository, task);
 	}
 
 	@Override
 	public boolean canPostContent(TaskRepository repository, ITask task) {
-		return TracRepositoryConnector.hasAttachmentSupport(repository, task);
+		return PhabricatorRepositoryConnector.hasAttachmentSupport(repository, task);
 	}
 
 }

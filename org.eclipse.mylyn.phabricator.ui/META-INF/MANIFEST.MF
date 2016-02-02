@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.mylyn.phabricator.ui;singleton:=true
 Bundle-Version: 3.18.0.qualifier
-Bundle-Activator: org.eclipse.mylyn.internal.phabricator.ui.TracUiPlugin
+Bundle-Activator: org.eclipse.mylyn.internal.phabricator.ui.PhabricatorUiPlugin
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jface.text,
@@ -15,10 +15,12 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.mylyn.commons.net;bundle-version="[3.8.0,4.0.0)",
  org.eclipse.mylyn.commons.ui;bundle-version="[3.8.0,4.0.0)",
  org.eclipse.mylyn.commons.workbench;bundle-version="[3.8.0,4.0.0)",
- org.eclipse.mylyn.phabricator.core;bundle-version="3.18.0"
+ org.eclipse.mylyn.phabricator.core;bundle-version="3.18.0",
+ Zool;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.mylyn.internal.phabricator.ui;x-internal:=true,
  org.eclipse.mylyn.internal.phabricator.ui.editor;x-internal:=true,
  org.eclipse.mylyn.internal.phabricator.ui.wizard;x-internal:=true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
+Import-Package: org.eclipse.jdt.annotation

@@ -16,7 +16,7 @@ package org.eclipse.mylyn.internal.phabricator.core.client;
  * 
  * @author Steffen Pingel
  */
-public class TracRemoteException extends TracException {
+public class TracRemoteException extends PhabricatorException {
 
 	private static final long serialVersionUID = -6761365344287289624L;
 

@@ -18,7 +18,7 @@
          point="org.eclipse.mylyn.tasks.ui.repositories">
       <connectorUi
             brandingIcon="icons/eview16/trac-icon.gif"
-            class="org.eclipse.mylyn.internal.phabricator.ui.TracConnectorUi"
+            class="org.eclipse.mylyn.internal.phabricator.ui.PhabricatorConnectorUi"
             id="trac"
             name="%TracConnectorUi.name"
             overlayIcon="icons/eview16/overlay-trac.gif"/>

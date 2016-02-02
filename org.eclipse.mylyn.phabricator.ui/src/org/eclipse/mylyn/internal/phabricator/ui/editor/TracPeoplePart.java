@@ -12,8 +12,8 @@
 package org.eclipse.mylyn.internal.phabricator.ui.editor;
 
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorAttributeMapper;
 import org.eclipse.mylyn.internal.phabricator.core.TracAttribute;
-import org.eclipse.mylyn.internal.phabricator.core.TracAttributeMapper;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.ui.editors.AbstractAttributeEditor;
@@ -37,6 +37,8 @@ public class TracPeoplePart extends AbstractTaskEditorPart {
 	}
 
 	private void addAttribute(Composite composite, FormToolkit toolkit, TaskAttribute attribute) {
+		System.out.println("TracPeoplePart.addAttribute()");
+
 		AbstractAttributeEditor editor = createAttributeEditor(attribute);
 		if (editor != null) {
 			editor.createLabelControl(composite, toolkit);
@@ -59,6 +61,8 @@ public class TracPeoplePart extends AbstractTaskEditorPart {
 
 	@Override
 	public void createControl(Composite parent, FormToolkit toolkit) {
+		System.out.println("TracPeoplePart.createControl()");
+
 		Section section = createSection(parent, toolkit, true);
 		Composite peopleComposite = toolkit.createComposite(section);
 		GridLayout layout = new GridLayout(2, false);
@@ -67,10 +71,11 @@ public class TracPeoplePart extends AbstractTaskEditorPart {
 
 		addAttribute(peopleComposite, toolkit, getTaskData().getRoot().getMappedAttribute(TaskAttribute.USER_ASSIGNED));
 		addAttribute(peopleComposite, toolkit, getTaskData().getRoot().getMappedAttribute(TaskAttribute.USER_REPORTER));
-		addAttribute(peopleComposite, toolkit, getTaskData().getRoot().getMappedAttribute(TracAttributeMapper.NEW_CC));
+		addAttribute(peopleComposite, toolkit,
+				getTaskData().getRoot().getMappedAttribute(PhabricatorAttributeMapper.NEW_CC));
 		addSelfToCC(peopleComposite);
 		TaskAttribute cc = getTaskData().getRoot().getMappedAttribute(TracAttribute.CC.getTaskKey());
-		TaskAttribute removeCc = getTaskData().getRoot().getMappedAttribute(TracAttributeMapper.REMOVE_CC);
+		TaskAttribute removeCc = getTaskData().getRoot().getMappedAttribute(PhabricatorAttributeMapper.REMOVE_CC);
 		if (cc != null && removeCc != null) {
 			addAttribute(peopleComposite, toolkit, cc);
 			toolkit.createLabel(peopleComposite, ""); //$NON-NLS-1$

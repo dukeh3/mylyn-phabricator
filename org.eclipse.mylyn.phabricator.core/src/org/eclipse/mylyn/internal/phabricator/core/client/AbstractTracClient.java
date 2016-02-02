@@ -97,7 +97,7 @@ public abstract class AbstractTracClient implements ITracClient {
 	}
 
 	protected void authenticateAccountManager(HttpClient httpClient, HostConfiguration hostConfiguration,
-			AuthenticationCredentials credentials, IProgressMonitor monitor) throws IOException, TracLoginException {
+			AuthenticationCredentials credentials, IProgressMonitor monitor) throws IOException, PhabricatorLoginException {
 		String formToken = getFormToken(httpClient);
 		authenticateAccountManagerInternal(httpClient, hostConfiguration, credentials, monitor, formToken);
 
@@ -111,7 +111,7 @@ public abstract class AbstractTracClient implements ITracClient {
 
 	public void authenticateAccountManagerInternal(HttpClient httpClient, HostConfiguration hostConfiguration,
 			AuthenticationCredentials credentials, IProgressMonitor monitor, String formToken) throws IOException,
-			TracLoginException {
+			PhabricatorLoginException {
 		PostMethod post = new PostMethod(WebUtil.getRequestPath(repositoryUrl + LOGIN_URL));
 		post.setFollowRedirects(false);
 		NameValuePair[] data = { new NameValuePair("referer", ""), //$NON-NLS-1$ //$NON-NLS-2$
@@ -129,7 +129,7 @@ public abstract class AbstractTracClient implements ITracClient {
 			}
 			// code should be a redirect in case of success  
 			if (code == HttpURLConnection.HTTP_OK) {
-				throw new TracLoginException();
+				throw new PhabricatorLoginException();
 			}
 		} finally {
 			WebUtil.releaseConnection(post, monitor);
@@ -149,10 +149,10 @@ public abstract class AbstractTracClient implements ITracClient {
 	/**
 	 * Check if authentication cookie has been set.
 	 * 
-	 * @throws TracLoginException
+	 * @throws PhabricatorLoginException
 	 *             thrown if the cookie has not been set
 	 */
-	protected void validateAuthenticationState(HttpClient httpClient) throws TracLoginException {
+	protected void validateAuthenticationState(HttpClient httpClient) throws PhabricatorLoginException {
 		Cookie[] cookies = httpClient.getState().getCookies();
 		for (Cookie cookie : cookies) {
 			if (LOGIN_COOKIE_NAME.equals(cookie.getName())) {
@@ -164,7 +164,7 @@ public abstract class AbstractTracClient implements ITracClient {
 			System.err.println(" Authentication failed: " + httpClient.getState()); //$NON-NLS-1$
 		}
 
-		throw new TracLoginException();
+		throw new PhabricatorLoginException();
 	}
 
 	public TracComponent[] getComponents() {
@@ -223,14 +223,14 @@ public abstract class AbstractTracClient implements ITracClient {
 		return (data.lastUpdate != 0);
 	}
 
-	public void updateAttributes(IProgressMonitor monitor, boolean force) throws TracException {
+	public void updateAttributes(IProgressMonitor monitor, boolean force) throws PhabricatorException {
 		if (!hasAttributes() || force) {
 			updateAttributes(monitor);
 			data.lastUpdate = System.currentTimeMillis();
 		}
 	}
 
-	public abstract void updateAttributes(IProgressMonitor monitor) throws TracException;
+	public abstract void updateAttributes(IProgressMonitor monitor) throws PhabricatorException;
 
 	public void setData(TracClientData data) {
 		this.data = data;

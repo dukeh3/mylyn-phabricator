@@ -20,12 +20,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.mylyn.commons.core.StatusHandler;
-import org.eclipse.mylyn.internal.phabricator.ui.TracUiPlugin;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearch;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearchFilter;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearchFilter.CompareOperator;
 import org.eclipse.mylyn.internal.phabricator.core.util.TracUtil;
+import org.eclipse.mylyn.internal.phabricator.ui.PhabricatorUiPlugin;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.wizards.AbstractRepositoryQueryPage;
@@ -119,7 +119,7 @@ public class TracFilterQueryPage extends AbstractRepositoryQueryPage {
 			if (field != null) {
 				showSearchField(field, filter);
 			} else {
-				StatusHandler.log(new Status(IStatus.WARNING, TracUiPlugin.ID_PLUGIN,
+				StatusHandler.log(new Status(IStatus.WARNING, PhabricatorUiPlugin.ID_PLUGIN,
 						"Ignoring invalid search filter: " + filter)); //$NON-NLS-1$
 			}
 		}

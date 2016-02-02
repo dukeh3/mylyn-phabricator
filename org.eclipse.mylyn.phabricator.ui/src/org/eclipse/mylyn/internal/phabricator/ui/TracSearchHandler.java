@@ -12,7 +12,7 @@
 package org.eclipse.mylyn.internal.phabricator.ui;
 
 import org.eclipse.mylyn.internal.tasks.core.AbstractSearchHandler;
-import org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearch;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearchFilter;
@@ -26,7 +26,7 @@ public class TracSearchHandler extends AbstractSearchHandler {
 
 	@Override
 	public String getConnectorKind() {
-		return TracCorePlugin.CONNECTOR_KIND;
+		return PhabricatorCorePlugin.CONNECTOR_KIND;
 	}
 
 	@Override

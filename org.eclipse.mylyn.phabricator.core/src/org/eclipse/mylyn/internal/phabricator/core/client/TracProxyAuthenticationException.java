@@ -11,7 +11,7 @@
 
 package org.eclipse.mylyn.internal.phabricator.core.client;
 
-public class TracProxyAuthenticationException extends TracException {
+public class TracProxyAuthenticationException extends PhabricatorException {
 
 	private static final long serialVersionUID = 305145749259511429L;
 

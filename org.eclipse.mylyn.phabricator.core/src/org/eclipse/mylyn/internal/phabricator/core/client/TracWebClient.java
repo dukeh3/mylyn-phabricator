@@ -218,7 +218,7 @@ public class TracWebClient extends AbstractTracClient {
 			this.url = url;
 		}
 
-		public GetMethod execute(IProgressMonitor monitor) throws TracLoginException, IOException, TracHttpException {
+		public GetMethod execute(IProgressMonitor monitor) throws PhabricatorLoginException, IOException, TracHttpException {
 			hostConfiguration = WebUtil.createHostConfiguration(httpClient, location, monitor);
 
 			for (int attempt = 0; attempt < 2; attempt++) {
@@ -228,7 +228,7 @@ public class TracWebClient extends AbstractTracClient {
 					if (credentialsValid(credentials)) {
 						try {
 							authenticate(monitor);
-						} catch (TracLoginException e) {
+						} catch (PhabricatorLoginException e) {
 							// re-try once, see bug 302792							
 							authenticate(monitor);
 						}
@@ -261,14 +261,14 @@ public class TracWebClient extends AbstractTracClient {
 				}
 			}
 
-			throw new TracLoginException();
+			throw new PhabricatorLoginException();
 		}
 
-		private void authenticate(IProgressMonitor monitor) throws TracLoginException, IOException {
+		private void authenticate(IProgressMonitor monitor) throws PhabricatorLoginException, IOException {
 			while (true) {
 				AuthenticationCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
 				if (!credentialsValid(credentials)) {
-					throw new TracLoginException();
+					throw new PhabricatorLoginException();
 				}
 
 				// try standard basic/digest/ntlm authentication first
@@ -314,7 +314,7 @@ public class TracWebClient extends AbstractTracClient {
 		}
 
 		private boolean needsReauthentication(int code, IProgressMonitor monitor) throws IOException,
-				TracLoginException {
+				PhabricatorLoginException {
 			final AuthenticationType authenticationType;
 			if (code == HttpStatus.SC_UNAUTHORIZED || code == HttpStatus.SC_FORBIDDEN) {
 				authenticationType = AuthenticationType.REPOSITORY;
@@ -329,7 +329,7 @@ public class TracWebClient extends AbstractTracClient {
 			try {
 				location.requestCredentials(authenticationType, null, monitor);
 			} catch (UnsupportedRequestException e) {
-				throw new TracLoginException();
+				throw new PhabricatorLoginException();
 			}
 
 			hostConfiguration = WebUtil.createHostConfiguration(httpClient, location, monitor);
@@ -347,15 +347,15 @@ public class TracWebClient extends AbstractTracClient {
 		this.httpClient = createHttpClient();
 	}
 
-	private synchronized GetMethod connect(String requestUrl, IProgressMonitor monitor) throws TracException {
+	private synchronized GetMethod connect(String requestUrl, IProgressMonitor monitor) throws PhabricatorException {
 		monitor = Policy.monitorFor(monitor);
 		try {
 			Request request = new Request(requestUrl);
 			return request.execute(monitor);
-		} catch (TracException e) {
+		} catch (PhabricatorException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		}
 	}
 
@@ -365,7 +365,7 @@ public class TracWebClient extends AbstractTracClient {
 	 * @param id
 	 *            Trac id of ticket
 	 */
-	public TracTicket getTicket(int id, IProgressMonitor monitor) throws TracException {
+	public TracTicket getTicket(int id, IProgressMonitor monitor) throws PhabricatorException {
 		GetMethod method = connect(repositoryUrl + ITracClient.TICKET_URL + id, monitor);
 		try {
 			TracTicket ticket = new TracTicket(id);
@@ -458,16 +458,16 @@ public class TracWebClient extends AbstractTracClient {
 
 			throw new InvalidTicketException();
 		} catch (IOException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} catch (ParseException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} finally {
 			WebUtil.releaseConnection(method, monitor);
 		}
 	}
 
 	public void searchForTicketIds(TracSearch query, List<Integer> result, IProgressMonitor monitor)
-			throws TracException {
+			throws PhabricatorException {
 		List<TracTicket> ticketResult = new ArrayList<TracTicket>();
 		search(query, ticketResult, monitor);
 		for (TracTicket tracTicket : ticketResult) {
@@ -475,7 +475,7 @@ public class TracWebClient extends AbstractTracClient {
 		}
 	}
 
-	public void search(TracSearch query, List<TracTicket> result, IProgressMonitor monitor) throws TracException {
+	public void search(TracSearch query, List<TracTicket> result, IProgressMonitor monitor) throws PhabricatorException {
 		GetMethod method = connect(repositoryUrl + ITracClient.QUERY_URL + query.toUrl(), monitor);
 		try {
 			InputStream in = WebUtil.getResponseBodyAsStream(method, monitor);
@@ -498,7 +498,7 @@ public class TracWebClient extends AbstractTracClient {
 				in.close();
 			}
 		} catch (IOException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} finally {
 			WebUtil.releaseConnection(method, monitor);
 		}
@@ -519,7 +519,7 @@ public class TracWebClient extends AbstractTracClient {
 		return values;
 	}
 
-	public TracRepositoryInfo validate(IProgressMonitor monitor) throws TracException {
+	public TracRepositoryInfo validate(IProgressMonitor monitor) throws PhabricatorException {
 		GetMethod method = connect(repositoryUrl + "/", monitor); //$NON-NLS-1$
 		try {
 			return new TracRepositoryInfo();
@@ -529,7 +529,7 @@ public class TracWebClient extends AbstractTracClient {
 	}
 
 	@Override
-	public void updateAttributes(IProgressMonitor monitor) throws TracException {
+	public void updateAttributes(IProgressMonitor monitor) throws PhabricatorException {
 		monitor.beginTask(Messages.TracWebClient_Updating_attributes, IProgressMonitor.UNKNOWN);
 
 		GetMethod method = connect(repositoryUrl + ITracClient.CUSTOM_QUERY_URL, monitor);
@@ -563,9 +563,9 @@ public class TracWebClient extends AbstractTracClient {
 				in.close();
 			}
 		} catch (IOException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} catch (ParseException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} finally {
 			WebUtil.releaseConnection(method, monitor);
 		}
@@ -699,7 +699,7 @@ public class TracWebClient extends AbstractTracClient {
 		}
 	}
 
-	public void updateAttributesNewTicketPage(IProgressMonitor monitor) throws TracException {
+	public void updateAttributesNewTicketPage(IProgressMonitor monitor) throws PhabricatorException {
 		monitor.beginTask(Messages.TracWebClient_Updating_attributes, IProgressMonitor.UNKNOWN);
 
 		GetMethod method = connect(repositoryUrl + ITracClient.NEW_TICKET_URL, monitor);
@@ -763,9 +763,9 @@ public class TracWebClient extends AbstractTracClient {
 				in.close();
 			}
 		} catch (IOException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} catch (ParseException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		} finally {
 			WebUtil.releaseConnection(method, monitor);
 		}
@@ -843,7 +843,7 @@ public class TracWebClient extends AbstractTracClient {
 		return ""; //$NON-NLS-1$
 	}
 
-	public InputStream getAttachmentData(int id, String filename, IProgressMonitor monitor) throws TracException {
+	public InputStream getAttachmentData(int id, String filename, IProgressMonitor monitor) throws PhabricatorException {
 		GetMethod method = connect(repositoryUrl + ITracClient.ATTACHMENT_URL + id + "/" + filename + "?format=raw", //$NON-NLS-1$ //$NON-NLS-2$
 				monitor);
 		try {
@@ -852,28 +852,28 @@ public class TracWebClient extends AbstractTracClient {
 			return method.getResponseBodyAsStream();
 		} catch (IOException e) {
 			WebUtil.releaseConnection(method, monitor);
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		}
 	}
 
 	public void putAttachmentData(int id, String name, String description, InputStream in, IProgressMonitor monitor,
-			boolean replace) throws TracException {
-		throw new TracException("Unsupported operation"); //$NON-NLS-1$
+			boolean replace) throws PhabricatorException {
+		throw new PhabricatorException("Unsupported operation"); //$NON-NLS-1$
 	}
 
-	public void deleteAttachment(int ticketId, String filename, IProgressMonitor monitor) throws TracException {
-		throw new TracException("Unsupported operation"); //$NON-NLS-1$
+	public void deleteAttachment(int ticketId, String filename, IProgressMonitor monitor) throws PhabricatorException {
+		throw new PhabricatorException("Unsupported operation"); //$NON-NLS-1$
 	}
 
-	public int createTicket(TracTicket ticket, IProgressMonitor monitor) throws TracException {
-		throw new TracException("Unsupported operation"); //$NON-NLS-1$
+	public int createTicket(TracTicket ticket, IProgressMonitor monitor) throws PhabricatorException {
+		throw new PhabricatorException("Unsupported operation"); //$NON-NLS-1$
 	}
 
-	public void updateTicket(TracTicket ticket, String comment, IProgressMonitor monitor) throws TracException {
-		throw new TracException("Unsupported operation"); //$NON-NLS-1$
+	public void updateTicket(TracTicket ticket, String comment, IProgressMonitor monitor) throws PhabricatorException {
+		throw new PhabricatorException("Unsupported operation"); //$NON-NLS-1$
 	}
 
-	public Set<Integer> getChangedTickets(Date since, IProgressMonitor monitor) throws TracException {
+	public Set<Integer> getChangedTickets(Date since, IProgressMonitor monitor) throws PhabricatorException {
 		return null;
 	}
 
@@ -881,11 +881,11 @@ public class TracWebClient extends AbstractTracClient {
 		throw new UnsupportedOperationException();
 	}
 
-	public void deleteTicket(int ticketId, IProgressMonitor monitor) throws TracException {
+	public void deleteTicket(int ticketId, IProgressMonitor monitor) throws PhabricatorException {
 		throw new UnsupportedOperationException();
 	}
 
-	public List<TracComment> getComments(int id, IProgressMonitor monitor) throws TracException {
+	public List<TracComment> getComments(int id, IProgressMonitor monitor) throws PhabricatorException {
 		throw new UnsupportedOperationException();
 	}
 

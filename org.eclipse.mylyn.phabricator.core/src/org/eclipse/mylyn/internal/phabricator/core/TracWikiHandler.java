@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.internal.phabricator.core.client.AbstractWikiHandler;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracWikiClient;
-import org.eclipse.mylyn.internal.phabricator.core.client.TracException;
+import org.eclipse.mylyn.internal.phabricator.core.client.PhabricatorException;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracWikiPage;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracWikiPageInfo;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -29,9 +29,9 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
  */
 public class TracWikiHandler extends AbstractWikiHandler {
 
-	private final TracRepositoryConnector connector;
+	private final PhabricatorRepositoryConnector connector;
 
-	public TracWikiHandler(TracRepositoryConnector connector) {
+	public TracWikiHandler(PhabricatorRepositoryConnector connector) {
 		this.connector = connector;
 	}
 
@@ -41,8 +41,8 @@ public class TracWikiHandler extends AbstractWikiHandler {
 		try {
 			String[] names = getTracWikiClient(repository).getAllWikiPageNames(monitor);
 			return names;
-		} catch (TracException e) {
-			throw new CoreException(TracCorePlugin.toStatus(e, repository));
+		} catch (PhabricatorException e) {
+			throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 		} finally {
 			monitor.done();
 		}
@@ -55,8 +55,8 @@ public class TracWikiHandler extends AbstractWikiHandler {
 		try {
 			TracWikiPage page = getTracWikiClient(repository).getWikiPage(pageName, monitor);
 			return page;
-		} catch (TracException e) {
-			throw new CoreException(TracCorePlugin.toStatus(e, repository));
+		} catch (PhabricatorException e) {
+			throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 		} finally {
 			monitor.done();
 		}
@@ -76,11 +76,11 @@ public class TracWikiHandler extends AbstractWikiHandler {
 			if (success) {
 				return;
 			} else {
-				throw new CoreException(TracCorePlugin.toStatus(new TracException(
+				throw new CoreException(PhabricatorCorePlugin.toStatus(new PhabricatorException(
 						"Failed to upload wiki page. No further information available."), repository)); //$NON-NLS-1$
 			}
-		} catch (TracException e) {
-			throw new CoreException(TracCorePlugin.toStatus(e, repository));
+		} catch (PhabricatorException e) {
+			throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 		} finally {
 			monitor.done();
 		}
@@ -93,19 +93,19 @@ public class TracWikiHandler extends AbstractWikiHandler {
 		try {
 			TracWikiPageInfo[] versions = getTracWikiClient(repository).getWikiPageInfoAllVersions(pageName, monitor);
 			return versions;
-		} catch (TracException e) {
-			throw new CoreException(TracCorePlugin.toStatus(e, repository));
+		} catch (PhabricatorException e) {
+			throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 		} finally {
 			monitor.done();
 		}
 	}
 
-	private ITracWikiClient getTracWikiClient(TaskRepository repository) throws TracException {
+	private ITracWikiClient getTracWikiClient(TaskRepository repository) throws PhabricatorException {
 		ITracClient client = connector.getClientManager().getTracClient(repository);
 		if (client instanceof ITracWikiClient) {
 			return (ITracWikiClient) client;
 		} else {
-			throw new TracException("The access mode of " + repository.toString() //$NON-NLS-1$
+			throw new PhabricatorException("The access mode of " + repository.toString() //$NON-NLS-1$
 					+ " does not support Wiki page editting."); //$NON-NLS-1$
 		}
 	}

@@ -16,8 +16,8 @@ import java.net.MalformedURLException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AbstractWebLocation;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
-import org.eclipse.mylyn.internal.phabricator.core.client.TracException;
-import org.eclipse.mylyn.internal.phabricator.core.client.TracLoginException;
+import org.eclipse.mylyn.internal.phabricator.core.client.PhabricatorException;
+import org.eclipse.mylyn.internal.phabricator.core.client.PhabricatorLoginException;
 import org.eclipse.mylyn.internal.phabricator.core.client.TracWebClient;
 import org.eclipse.mylyn.internal.phabricator.core.client.TracXmlRpcClient;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient.Version;
@@ -44,23 +44,23 @@ public class TracClientFactory {
 	 * <p>
 	 * Order of the tried access types: XML-RPC, Trac 0.9
 	 */
-	public static Version probeClient(AbstractWebLocation location) throws MalformedURLException, TracException {
+	public static Version probeClient(AbstractWebLocation location) throws MalformedURLException, PhabricatorException {
 		try {
 			ITracClient repository = new TracXmlRpcClient(location, Version.XML_RPC);
 			repository.validate(new NullProgressMonitor());
 			return Version.XML_RPC;
-		} catch (TracException e) {
+		} catch (PhabricatorException e) {
 			try {
 				ITracClient repository = new TracWebClient(location, Version.TRAC_0_9);
 				repository.validate(new NullProgressMonitor());
 				return Version.TRAC_0_9;
-			} catch (TracLoginException e2) {
+			} catch (PhabricatorLoginException e2) {
 				throw e;
-			} catch (TracException e2) {
+			} catch (PhabricatorException e2) {
 			}
 		}
 
-		throw new TracException();
+		throw new PhabricatorException();
 	}
 
 }

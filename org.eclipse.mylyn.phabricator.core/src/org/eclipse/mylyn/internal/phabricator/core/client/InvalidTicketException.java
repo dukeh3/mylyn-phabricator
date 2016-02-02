@@ -16,7 +16,7 @@ package org.eclipse.mylyn.internal.phabricator.core.client;
  * 
  * @author Steffen Pingel
  */
-public class InvalidTicketException extends TracException {
+public class InvalidTicketException extends PhabricatorException {
 
 	private static final long serialVersionUID = 7716941243394876876L;
 

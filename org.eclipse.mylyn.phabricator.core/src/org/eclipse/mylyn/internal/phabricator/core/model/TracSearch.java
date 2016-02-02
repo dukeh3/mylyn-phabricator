@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.commons.core.StatusHandler;
-import org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearchFilter.CompareOperator;
 import org.eclipse.osgi.util.NLS;
@@ -169,7 +169,7 @@ public class TracSearch {
 					sb.append(URLEncoder.encode(filter.getOperator().getQueryValue(), ITracClient.CHARSET));
 					sb.append(URLEncoder.encode(value, ITracClient.CHARSET));
 				} catch (UnsupportedEncodingException e) {
-					StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN,
+					StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN,
 							"Unexpected exception while decoding URL", e)); //$NON-NLS-1$
 				}
 			}
@@ -197,14 +197,14 @@ public class TracSearch {
 						try {
 							setMax(Integer.parseInt(value));
 						} catch (NumberFormatException e) {
-							StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN, NLS.bind(
+							StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN, NLS.bind(
 									"Illegal format in URL, expected a number ''{0}''", value), e)); //$NON-NLS-1$							
 						}
 					} else {
 						addFilter(key, value);
 					}
 				} catch (UnsupportedEncodingException e) {
-					StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN,
+					StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN,
 							"Unexpected exception while decoding URL", e)); //$NON-NLS-1$
 				}
 			}

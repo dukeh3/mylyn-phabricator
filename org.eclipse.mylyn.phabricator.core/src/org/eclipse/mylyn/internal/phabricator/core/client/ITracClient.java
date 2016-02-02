@@ -33,7 +33,7 @@ import org.eclipse.mylyn.internal.phabricator.core.model.TracVersion;
 
 /**
  * Defines the requirements for classes that provide remote access to Trac repositories.
- * 
+ *
  * @author Steffen Pingel
  */
 public interface ITracClient {
@@ -55,7 +55,7 @@ public interface ITracClient {
 			case TRAC_0_9:
 				return "Web"; //$NON-NLS-1$
 			case XML_RPC:
-				return "XML-RPC"; //$NON-NLS-1$ 
+				return "XML-RPC"; //$NON-NLS-1$
 			default:
 				return null;
 			}
@@ -73,7 +73,7 @@ public interface ITracClient {
 
 	public static final String TICKET_URL = "/ticket/"; //$NON-NLS-1$
 
-	public static final String NEW_TICKET_URL = "/newticket"; //$NON-NLS-1$
+	public static final String NEW_TICKET_URL = "/maniphest/task/edit/form/1"; //$NON-NLS-1$
 
 	public static final String CUSTOM_QUERY_URL = "/query"; //$NON-NLS-1$
 
@@ -97,16 +97,16 @@ public interface ITracClient {
 
 	/**
 	 * Gets ticket with <code>id</code> from repository.
-	 * 
+	 *
 	 * @param id
 	 *            the id of the ticket to get
 	 * @param monitor
 	 *            TODO
 	 * @return the ticket
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 *             thrown in case of a connection error
 	 */
-	TracTicket getTicket(int id, IProgressMonitor monitor) throws TracException;
+	TracTicket getTicket(int id, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Returns the access type.
@@ -120,52 +120,53 @@ public interface ITracClient {
 
 	/**
 	 * Queries tickets from repository. All found tickets are added to <code>result</code>.
-	 * 
+	 *
 	 * @param query
 	 *            the search criteria
 	 * @param result
 	 *            the list of found tickets
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 *             thrown in case of a connection error
 	 */
-	void search(TracSearch query, List<TracTicket> result, IProgressMonitor monitor) throws TracException;
+	void search(TracSearch query, List<TracTicket> result, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Queries ticket id from repository. All found tickets are added to <code>result</code>.
-	 * 
+	 *
 	 * @param query
 	 *            the search criteria
 	 * @param result
 	 *            the list of found tickets
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 *             thrown in case of a connection error
 	 */
-	void searchForTicketIds(TracSearch query, List<Integer> result, IProgressMonitor monitor) throws TracException;
+	void searchForTicketIds(TracSearch query, List<Integer> result, IProgressMonitor monitor)
+			throws PhabricatorException;
 
 	/**
 	 * Validates the repository connection.
-	 * 
+	 *
 	 * @return information about the repository
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 *             thrown in case of a connection error
 	 */
-	TracRepositoryInfo validate(IProgressMonitor monitor) throws TracException;
+	TracRepositoryInfo validate(IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Returns true, if the repository details are cached. If this method returns true, invoking
 	 * <tt>updateAttributes(monitor, false)</tt> will return without opening a connection.
-	 * 
+	 *
 	 * @see #updateAttributes(IProgressMonitor, boolean)
 	 */
 	boolean hasAttributes();
 
 	/**
 	 * Updates cached repository details: milestones, versions etc.
-	 * 
-	 * @throws TracException
+	 *
+	 * @throws PhabricatorException
 	 *             thrown in case of a connection error
 	 */
-	void updateAttributes(IProgressMonitor monitor, boolean force) throws TracException;
+	void updateAttributes(IProgressMonitor monitor, boolean force) throws PhabricatorException;
 
 	TracComponent[] getComponents();
 
@@ -187,34 +188,34 @@ public interface ITracClient {
 
 	TracVersion[] getVersions();
 
-	InputStream getAttachmentData(int ticketId, String filename, IProgressMonitor monitor) throws TracException;
+	InputStream getAttachmentData(int ticketId, String filename, IProgressMonitor monitor) throws PhabricatorException;
 
 	void putAttachmentData(int ticketId, String name, String description, InputStream source, IProgressMonitor monitor,
-			boolean replace) throws TracException;
+			boolean replace) throws PhabricatorException;
 
-	void deleteAttachment(int ticketId, String filename, IProgressMonitor monitor) throws TracException;
+	void deleteAttachment(int ticketId, String filename, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * @return the id of the created ticket
 	 */
-	int createTicket(TracTicket ticket, IProgressMonitor monitor) throws TracException;
+	int createTicket(TracTicket ticket, IProgressMonitor monitor) throws PhabricatorException;
 
-	void updateTicket(TracTicket ticket, String comment, IProgressMonitor monitor) throws TracException;
+	void updateTicket(TracTicket ticket, String comment, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Sets a reference to the cached repository attributes.
-	 * 
+	 *
 	 * @param data
 	 *            cached repository attributes
 	 */
 	void setData(TracClientData data);
 
-	Set<Integer> getChangedTickets(Date since, IProgressMonitor monitor) throws TracException;
+	Set<Integer> getChangedTickets(Date since, IProgressMonitor monitor) throws PhabricatorException;
 
-	Date getTicketLastChanged(Integer id, IProgressMonitor monitor) throws TracException;
+	Date getTicketLastChanged(Integer id, IProgressMonitor monitor) throws PhabricatorException;
 
-	void deleteTicket(int ticketId, IProgressMonitor monitor) throws TracException;
+	void deleteTicket(int ticketId, IProgressMonitor monitor) throws PhabricatorException;
 
-	List<TracComment> getComments(int id, IProgressMonitor monitor) throws TracException;
+	List<TracComment> getComments(int id, IProgressMonitor monitor) throws PhabricatorException;
 
 }

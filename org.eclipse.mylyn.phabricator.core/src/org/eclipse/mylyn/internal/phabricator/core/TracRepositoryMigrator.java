@@ -21,7 +21,7 @@ public class TracRepositoryMigrator extends AbstractRepositoryMigrator {
 
 	@Override
 	public String getConnectorKind() {
-		return TracCorePlugin.CONNECTOR_KIND;
+		return PhabricatorCorePlugin.CONNECTOR_KIND;
 	}
 
 	@Override

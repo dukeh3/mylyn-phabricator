@@ -23,7 +23,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
  */
 public class TracImages {
 
-	private static final URL baseURL = TracUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
+	private static final URL baseURL = PhabricatorUiPlugin.getDefault().getBundle().getEntry("/icons/"); //$NON-NLS-1$
 
 	public static final String T_VIEW = "eview16"; //$NON-NLS-1$
 

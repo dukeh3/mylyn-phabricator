@@ -13,7 +13,7 @@ package org.eclipse.mylyn.internal.phabricator.ui.editor;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.mylyn.internal.phabricator.core.TracAttributeMapper;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
 import org.eclipse.mylyn.tasks.ui.editors.AbstractAttributeEditor;
@@ -54,7 +54,7 @@ public class TracCcAttributeEditor extends AbstractAttributeEditor {
 
 		populateFromAttribute();
 
-		attrRemoveCc = getModel().getTaskData().getRoot().getMappedAttribute(TracAttributeMapper.REMOVE_CC);
+		attrRemoveCc = getModel().getTaskData().getRoot().getMappedAttribute(PhabricatorAttributeMapper.REMOVE_CC);
 		selectValuesToRemove();
 
 		list.addSelectionListener(new SelectionAdapter() {

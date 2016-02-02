@@ -15,7 +15,7 @@ import java.util.List;
 
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
-import org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.AbstractTaskHyperlinkDetector;
 
@@ -30,7 +30,7 @@ public class TracHyperlinkDetector extends AbstractTaskHyperlinkDetector {
 	@Override
 	protected List<IHyperlink> detectHyperlinks(ITextViewer textViewer, String content, int index, int contentOffset) {
 		TaskRepository taskRepository = getTaskRepository(textViewer);
-		if (taskRepository != null && TracCorePlugin.CONNECTOR_KIND.equals(taskRepository.getConnectorKind())) {
+		if (taskRepository != null && PhabricatorCorePlugin.CONNECTOR_KIND.equals(taskRepository.getConnectorKind())) {
 			return TracHyperlinkUtil.findTracHyperlinks(taskRepository, content, index, contentOffset);
 		}
 		return null;

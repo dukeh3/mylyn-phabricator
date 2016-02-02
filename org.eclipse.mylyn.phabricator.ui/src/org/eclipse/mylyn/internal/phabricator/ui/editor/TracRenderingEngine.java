@@ -14,9 +14,9 @@ package org.eclipse.mylyn.internal.phabricator.ui.editor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin;
 import org.eclipse.mylyn.internal.phabricator.core.client.ITracClient;
-import org.eclipse.mylyn.internal.phabricator.core.client.TracException;
+import org.eclipse.mylyn.internal.phabricator.core.client.PhabricatorException;
 import org.eclipse.mylyn.internal.phabricator.core.client.TracXmlRpcClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.ui.editors.AbstractRenderingEngine;
@@ -34,7 +34,7 @@ public class TracRenderingEngine extends AbstractRenderingEngine {
 	public String renderAsHtml(TaskRepository repository, String text, IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask("Render HTML Preview", IProgressMonitor.UNKNOWN); //$NON-NLS-1$
 		try {
-			ITracClient client = TracCorePlugin.getDefault()
+			ITracClient client = PhabricatorCorePlugin.getDefault()
 					.getConnector()
 					.getClientManager()
 					.getTracClient(repository);
@@ -61,11 +61,11 @@ public class TracRenderingEngine extends AbstractRenderingEngine {
 						+ htmlFooter;
 				return html;
 			} else {
-				throw new CoreException(TracCorePlugin.toStatus(new TracException(
+				throw new CoreException(PhabricatorCorePlugin.toStatus(new PhabricatorException(
 						"Preview is available only in XML-RPC access mode"), repository)); //$NON-NLS-1$
 			}
-		} catch (TracException e) {
-			throw new CoreException(TracCorePlugin.toStatus(e, repository));
+		} catch (PhabricatorException e) {
+			throw new CoreException(PhabricatorCorePlugin.toStatus(e, repository));
 		} finally {
 			monitor.done();
 		}

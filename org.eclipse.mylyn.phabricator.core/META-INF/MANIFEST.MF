@@ -9,13 +9,17 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.mylyn.commons.core;bundle-version="[3.8.0,4.0.0)",
  org.eclipse.mylyn.commons.net;bundle-version="[3.8.0,4.0.0)",
  org.eclipse.mylyn.commons.xmlrpc;bundle-version="[3.8.0,4.0.0)",
- org.apache.xmlrpc;bundle-version="[3.0.0,4.0.0)"
+ org.apache.xmlrpc;bundle-version="[3.0.0,4.0.0)",
+ Zool;bundle-version="1.0.0",
+ org.eclipse.jdt.annotation,
+ fenixtest;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.mylyn.internal.phabricator.core;x-friends:="org.eclipse.mylyn.trac.ui",
  org.eclipse.mylyn.internal.phabricator.core.client;x-friends:="org.eclipse.mylyn.trac.ui",
  org.eclipse.mylyn.internal.phabricator.core.model;x-friends:="org.eclipse.mylyn.trac.ui",
- org.eclipse.mylyn.internal.phabricator.core.util;x-friends:="org.eclipse.mylyn.trac.ui"
-Bundle-Activator: org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin
+ org.eclipse.mylyn.internal.phabricator.core.util;x-friends:="org.eclipse.mylyn.trac.ui",
+ org.phabricator.java
+Bundle-Activator: org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Localization: plugin
 Import-Package: com.google.gson;version="[2.1.0,3.0.0)",

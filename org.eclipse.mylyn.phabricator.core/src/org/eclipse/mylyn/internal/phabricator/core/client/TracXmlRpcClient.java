@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,36 +58,32 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.Policy;
 import org.eclipse.mylyn.commons.net.UnsupportedRequestException;
 import org.eclipse.mylyn.commons.net.WebUtil;
-import org.eclipse.mylyn.internal.phabricator.core.TracCorePlugin;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorCorePlugin;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracAction;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracAttachment;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracComment;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracComponent;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracMilestone;
-import org.eclipse.mylyn.internal.phabricator.core.model.TracPriority;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracRepositoryInfo;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracSearch;
-import org.eclipse.mylyn.internal.phabricator.core.model.TracSeverity;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracTicket;
+import org.eclipse.mylyn.internal.phabricator.core.model.TracTicket.Key;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracTicketField;
+import org.eclipse.mylyn.internal.phabricator.core.model.TracTicketField.Type;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracTicketResolution;
-import org.eclipse.mylyn.internal.phabricator.core.model.TracTicketStatus;
-import org.eclipse.mylyn.internal.phabricator.core.model.TracTicketType;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracVersion;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracWikiPage;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracWikiPageInfo;
-import org.eclipse.mylyn.internal.phabricator.core.model.TracTicket.Key;
-import org.eclipse.mylyn.internal.phabricator.core.model.TracTicketField.Type;
 import org.eclipse.mylyn.internal.phabricator.core.util.HttpMethodInterceptor;
 import org.eclipse.mylyn.internal.phabricator.core.util.TracHttpClientTransportFactory;
+import org.eclipse.mylyn.internal.phabricator.core.util.TracHttpClientTransportFactory.TracHttpException;
 import org.eclipse.mylyn.internal.phabricator.core.util.TracUtil;
 import org.eclipse.mylyn.internal.phabricator.core.util.TracXmlRpcClientRequest;
-import org.eclipse.mylyn.internal.phabricator.core.util.TracHttpClientTransportFactory.TracHttpException;
 import org.eclipse.osgi.util.NLS;
 
 /**
  * Represents a Trac repository that is accessed through the Trac XmlRpcPlugin.
- * 
+ *
  * @author Steffen Pingel
  * @author Xiaoyang Guan
  */
@@ -96,7 +91,8 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 
 	private static final Pattern ERROR_PATTERN_RPC_METHOD_NOT_FOUND = Pattern.compile("RPC method \".*\" not found"); //$NON-NLS-1$
 
-	private static final Pattern ERROR_PATTERN_MID_AIR_COLLISION = Pattern.compile("Sorry, can not save your changes.*This ticket has been modified by someone else since you started"); //$NON-NLS-1$
+	private static final Pattern ERROR_PATTERN_MID_AIR_COLLISION = Pattern.compile(
+			"Sorry, can not save your changes.*This ticket has been modified by someone else since you started"); //$NON-NLS-1$
 
 	private static final String ERROR_XML_RPC_PRIVILEGES_REQUIRED = "XML_RPC privileges are required to perform this operation"; //$NON-NLS-1$
 
@@ -111,11 +107,11 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			this.parameters = parameters;
 		}
 
-		public Object execute(IProgressMonitor monitor) throws TracException {
+		public Object execute(IProgressMonitor monitor) throws PhabricatorException {
 			try {
 				// first attempt
 				return executeCallInternal(monitor);
-			} catch (TracPermissionDeniedException e) {
+			} catch (PhabricatorPermissionDeniedException e) {
 				if (accountMangerAuthenticationFailed) {
 					// do not try again if this has failed in the past since it
 					// is more likely that XML_RPC permissions have not been set
@@ -132,7 +128,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 				HostConfiguration hostConfiguration = WebUtil.createHostConfiguration(httpClient, location, monitor);
 				try {
 					authenticateAccountManager(httpClient, hostConfiguration, credentials, monitor);
-				} catch (TracLoginException loginException) {
+				} catch (PhabricatorLoginException loginException) {
 					// caused by wrong user name or password
 					throw loginException;
 				} catch (IOException ignore) {
@@ -142,7 +138,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 
 				try {
 					validateAuthenticationState(httpClient);
-				} catch (TracLoginException ignore) {
+				} catch (PhabricatorLoginException ignore) {
 					// most likely form based authentication is not supported by
 					// repository
 					accountMangerAuthenticationFailed = true;
@@ -156,13 +152,14 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			return executeCallInternal(monitor);
 		}
 
-		private Object executeCallInternal(IProgressMonitor monitor) throws TracException {
+		private Object executeCallInternal(IProgressMonitor monitor) throws PhabricatorException {
 			try {
 				if (isTracd && digestScheme != null) {
 					probeAuthenticationScheme(monitor);
 				}
 				if (DEBUG_XMLRPC) {
-					System.err.println("Calling " + location.getUrl() + ": " + method + " " + CoreUtil.toString(parameters)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					System.err.println(
+							"Calling " + location.getUrl() + ": " + method + " " + CoreUtil.toString(parameters)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}
 				TracXmlRpcClientRequest request = new TracXmlRpcClientRequest(xmlrpc.getClientConfig(), method,
 						parameters, monitor);
@@ -170,9 +167,9 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			} catch (TracHttpException e) {
 				handleAuthenticationException(e.code, e.getAuthScheme());
 				// if not handled, throw generic exception
-				throw new TracException(e);
+				throw new PhabricatorException(e);
 			} catch (XmlRpcException e) {
-				// XXX work-around for http://trac-hacks.org/ticket/5848 
+				// XXX work-around for http://trac-hacks.org/ticket/5848
 				if (ERROR_XML_RPC_PRIVILEGES_REQUIRED.equals(e.getMessage()) || e.code == XML_FAULT_PERMISSION_DENIED) {
 					handleAuthenticationException(HttpStatus.SC_FORBIDDEN, null);
 					// should never happen as call above should always throw an exception
@@ -187,7 +184,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			} catch (OperationCanceledException e) {
 				throw e;
 			} catch (Exception e) {
-				throw new TracException(e);
+				throw new PhabricatorException(e);
 			}
 		}
 
@@ -212,29 +209,29 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			return false;
 		}
 
-		protected boolean handleAuthenticationException(int code, AuthScheme authScheme) throws TracException {
+		protected boolean handleAuthenticationException(int code, AuthScheme authScheme) throws PhabricatorException {
 			if (code == HttpStatus.SC_UNAUTHORIZED) {
 				if (DEBUG_AUTH) {
-					System.err.println(location.getUrl() + ": Unauthorized (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
+					System.err.println(location.getUrl() + ": Unauthorized (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				digestScheme = null;
-				TracLoginException exception = new TracLoginException();
+				PhabricatorLoginException exception = new PhabricatorLoginException();
 				exception.setNtlmAuthRequested(authScheme instanceof NTLMScheme);
 				throw exception;
 			} else if (code == HttpStatus.SC_FORBIDDEN) {
 				if (DEBUG_AUTH) {
-					System.err.println(location.getUrl() + ": Forbidden (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
+					System.err.println(location.getUrl() + ": Forbidden (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				digestScheme = null;
-				throw new TracPermissionDeniedException();
+				throw new PhabricatorPermissionDeniedException();
 			} else if (code == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED) {
 				if (DEBUG_AUTH) {
-					System.err.println(location.getUrl() + ": Proxy authentication required (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
+					System.err.println(location.getUrl() + ": Proxy authentication required (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				throw new TracProxyAuthenticationException();
 			} else if (code == SC_CERT_AUTH_FAILED) {
 				if (DEBUG_AUTH) {
-					System.err.println(location.getUrl() + ": Certificate authentication failed (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
+					System.err.println(location.getUrl() + ": Certificate authentication failed (" + code + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				throw new TracSslCertificateException();
 			}
@@ -242,7 +239,8 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	private static final boolean DEBUG_XMLRPC = Boolean.valueOf(Platform.getDebugOption("org.eclipse.mylyn.trac.core/debug/xmlrpc")); //$NON-NLS-1$
+	private static final boolean DEBUG_XMLRPC = Boolean
+			.valueOf(Platform.getDebugOption("org.eclipse.mylyn.trac.core/debug/xmlrpc")); //$NON-NLS-1$
 
 	public static final String XMLRPC_URL = "/xmlrpc"; //$NON-NLS-1$
 
@@ -295,7 +293,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 				AuthScope.ANY_SCHEME);
 	}
 
-	public synchronized XmlRpcClient getClient() throws TracException {
+	public synchronized XmlRpcClient getClient() throws PhabricatorException {
 		if (xmlrpc == null) {
 			config = new XmlRpcClientConfigImpl();
 			config.setEncoding(ITracClient.CHARSET);
@@ -316,12 +314,12 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 					DigestScheme scheme = digestScheme;
 					if (scheme != null) {
 						if (DEBUG_AUTH) {
-							System.err.println(location.getUrl() + ": Digest scheme is present"); //$NON-NLS-1$ 
+							System.err.println(location.getUrl() + ": Digest scheme is present"); //$NON-NLS-1$
 						}
 						Credentials creds = httpClient.getState().getCredentials(authScope);
 						if (creds != null) {
 							if (DEBUG_AUTH) {
-								System.err.println(location.getUrl() + ": Setting digest scheme for request"); //$NON-NLS-1$ 
+								System.err.println(location.getUrl() + ": Setting digest scheme for request"); //$NON-NLS-1$
 							}
 							method.getHostAuthState().setAuthScheme(digestScheme);
 							method.getHostAuthState().setAuthRequested(true);
@@ -334,7 +332,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 					if (authScheme instanceof DigestScheme) {
 						digestScheme = (DigestScheme) authScheme;
 						if (DEBUG_AUTH) {
-							System.err.println(location.getUrl() + ": Received digest scheme"); //$NON-NLS-1$ 
+							System.err.println(location.getUrl() + ": Received digest scheme"); //$NON-NLS-1$
 						}
 					}
 				}
@@ -360,7 +358,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return xmlrpc;
 	}
 
-	private URL getXmlRpcUrl(AuthenticationCredentials credentials) throws TracException {
+	private URL getXmlRpcUrl(AuthenticationCredentials credentials) throws PhabricatorException {
 		try {
 			String location = repositoryUrl.toString();
 			if (credentialsValid(credentials)) {
@@ -370,18 +368,18 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 
 			return new URL(location);
 		} catch (Exception e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		}
 	}
 
-	private void probeAuthenticationScheme(IProgressMonitor monitor) throws TracException {
+	private void probeAuthenticationScheme(IProgressMonitor monitor) throws PhabricatorException {
 		AuthenticationCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
 		if (!credentialsValid(credentials)) {
 			return;
 		}
 
 		if (DEBUG_AUTH) {
-			System.err.println(location.getUrl() + ": Probing authentication"); //$NON-NLS-1$ 
+			System.err.println(location.getUrl() + ": Probing authentication"); //$NON-NLS-1$
 		}
 		HostConfiguration hostConfiguration = WebUtil.createHostConfiguration(httpClient, location, monitor);
 		HeadMethod method = new HeadMethod(getXmlRpcUrl(credentials).toString());
@@ -389,34 +387,34 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			// execute without any credentials set
 			int result = WebUtil.execute(httpClient, hostConfiguration, method, new HttpState(), monitor);
 			if (DEBUG_AUTH) {
-				System.err.println(location.getUrl() + ": Received authentication response (" + result + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
+				System.err.println(location.getUrl() + ": Received authentication response (" + result + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			if (result == HttpStatus.SC_UNAUTHORIZED || result == HttpStatus.SC_FORBIDDEN) {
 				AuthScheme authScheme = method.getHostAuthState().getAuthScheme();
 				if (authScheme instanceof DigestScheme) {
 					this.digestScheme = (DigestScheme) authScheme;
 					if (DEBUG_AUTH) {
-						System.err.println(location.getUrl() + ": Received digest scheme"); //$NON-NLS-1$ 
+						System.err.println(location.getUrl() + ": Received digest scheme"); //$NON-NLS-1$
 					}
 				} else if (authScheme instanceof BasicScheme) {
 					httpClient.getParams().setAuthenticationPreemptive(true);
 					if (DEBUG_AUTH) {
-						System.err.println(location.getUrl() + ": Received basic scheme"); //$NON-NLS-1$ 
+						System.err.println(location.getUrl() + ": Received basic scheme"); //$NON-NLS-1$
 					}
 				} else if (authScheme != null) {
 					if (DEBUG_AUTH) {
-						System.err.println(location.getUrl() + ": Received scheme (" + authScheme.getClass() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ 
+						System.err.println(location.getUrl() + ": Received scheme (" + authScheme.getClass() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 				} else {
 					if (DEBUG_AUTH) {
-						System.err.println(location.getUrl() + ": No authentication scheme received"); //$NON-NLS-1$ 
+						System.err.println(location.getUrl() + ": No authentication scheme received"); //$NON-NLS-1$
 					}
 				}
 
 				Header header = method.getResponseHeader("Server"); //$NON-NLS-1$
 				isTracd = (header != null && header.getValue().startsWith("tracd")); //$NON-NLS-1$
 				if (DEBUG_AUTH && isTracd) {
-					System.err.println(location.getUrl() + ": Tracd detected"); //$NON-NLS-1$ 
+					System.err.println(location.getUrl() + ": Tracd detected"); //$NON-NLS-1$
 				}
 
 //					Header header = method.getResponseHeader("WWW-Authenticate");
@@ -441,9 +439,9 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	private Object call(IProgressMonitor monitor, String method, Object... parameters) throws TracException {
+	private Object call(IProgressMonitor monitor, String method, Object... parameters) throws PhabricatorException {
 		monitor = Policy.monitorFor(monitor);
-		TracException lastException = null;
+		PhabricatorException lastException = null;
 		for (int attempt = 0; attempt < 3; attempt++) {
 			if (!probed) {
 				try {
@@ -458,14 +456,14 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			try {
 				XmlRpcRequest request = new XmlRpcRequest(method, parameters);
 				return request.execute(monitor);
-			} catch (TracLoginException e) {
+			} catch (PhabricatorLoginException e) {
 				try {
 					location.requestCredentials(AuthenticationType.REPOSITORY, null, monitor);
 				} catch (UnsupportedRequestException ignored) {
 					throw e;
 				}
 				lastException = e;
-			} catch (TracPermissionDeniedException e) {
+			} catch (PhabricatorPermissionDeniedException e) {
 				try {
 					location.requestCredentials(AuthenticationType.REPOSITORY, null, monitor);
 				} catch (UnsupportedRequestException ignored) {
@@ -496,7 +494,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	private Object[] multicall(IProgressMonitor monitor, Map<String, Object>... calls) throws TracException {
+	private Object[] multicall(IProgressMonitor monitor, Map<String, Object>... calls) throws PhabricatorException {
 		Object[] result = (Object[]) call(monitor, "system.multicall", new Object[] { calls }); //$NON-NLS-1$
 		for (Object item : result) {
 			try {
@@ -504,7 +502,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			} catch (XmlRpcException e) {
 				throw new TracRemoteException(e);
 			} catch (Exception e) {
-				throw new TracException(e);
+				throw new PhabricatorException(e);
 			}
 		}
 		return result;
@@ -513,7 +511,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	private void checkForException(Object result) throws NumberFormatException, XmlRpcException {
 		if (result instanceof Map<?, ?>) {
 			Map<?, ?> exceptionData = (Map<?, ?>) result;
-			if (exceptionData.containsKey("faultCode") && exceptionData.containsKey("faultString")) { //$NON-NLS-1$ //$NON-NLS-2$ 
+			if (exceptionData.containsKey("faultCode") && exceptionData.containsKey("faultString")) { //$NON-NLS-1$ //$NON-NLS-2$
 				throw new XmlRpcException(Integer.parseInt(exceptionData.get("faultCode").toString()), //$NON-NLS-1$
 						(String) exceptionData.get("faultString")); //$NON-NLS-1$
 			} else if (exceptionData.containsKey("title")) { //$NON-NLS-1$
@@ -527,7 +525,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	private Map<String, Object> createMultiCall(String methodName, Object... parameters) throws TracException {
+	private Map<String, Object> createMultiCall(String methodName, Object... parameters) throws PhabricatorException {
 		Map<String, Object> table = new HashMap<String, Object>();
 		table.put("methodName", methodName); //$NON-NLS-1$
 		table.put("params", parameters); //$NON-NLS-1$
@@ -538,7 +536,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return ((Object[]) item)[0];
 	}
 
-	public TracRepositoryInfo validate(IProgressMonitor monitor) throws TracException {
+	public TracRepositoryInfo validate(IProgressMonitor monitor) throws PhabricatorException {
 		Integer epochAPIVersion;
 		Integer majorAPIVersion;
 		Integer minorAPIVersion;
@@ -553,35 +551,35 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 				majorAPIVersion = (Integer) result[0];
 				minorAPIVersion = (Integer) result[1];
 			} else {
-				throw new TracException(NLS.bind(Messages.TracXmlRpcClient_API_version_unsupported_Error,
-						REQUIRED_REVISION));
+				throw new PhabricatorException(
+						NLS.bind(Messages.TracXmlRpcClient_API_version_unsupported_Error, REQUIRED_REVISION));
 			}
 		} catch (TracNoSuchMethodException e) {
-			throw new TracException(NLS.bind(Messages.TracXmlRpcClient_Required_API_calls_missing_Error,
-					REQUIRED_REVISION));
+			throw new PhabricatorException(
+					NLS.bind(Messages.TracXmlRpcClient_Required_API_calls_missing_Error, REQUIRED_REVISION));
 		}
 
 		info = new TracRepositoryInfo(epochAPIVersion, majorAPIVersion, minorAPIVersion);
 		if (!info.isApiVersionOrHigher(REQUIRED_EPOCH, REQUIRED_MAJOR, REQUIRED_MINOR)) {
-			throw new TracException(NLS.bind(Messages.TracXmlRpcClient_API_version_X_unsupported_Error,
+			throw new PhabricatorException(NLS.bind(Messages.TracXmlRpcClient_API_version_X_unsupported_Error,
 					info.toString(), REQUIRED_REVISION));
 		}
 		return info;
 	}
 
-	private void updateAPIVersion(IProgressMonitor monitor) throws TracException {
+	private void updateAPIVersion(IProgressMonitor monitor) throws PhabricatorException {
 		if (info.isStale()) {
 			validate(monitor);
 		}
 	}
 
 	private boolean isApiVersionOrHigher(int epoch, int major, int minor, IProgressMonitor monitor)
-			throws TracException {
+			throws PhabricatorException {
 		updateAPIVersion(monitor);
 		return info.isApiVersionOrHigher(epoch, major, minor);
 	}
 
-	public List<TracComment> getComments(int id, IProgressMonitor monitor) throws TracException {
+	public List<TracComment> getComments(int id, IProgressMonitor monitor) throws PhabricatorException {
 		Object[] result = (Object[]) call(monitor, "ticket.changeLog", id, 0); //$NON-NLS-1$
 		List<TracComment> comments = new ArrayList<TracComment>(result.length);
 		for (Object item : result) {
@@ -590,7 +588,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return comments;
 	}
 
-	public TracTicket getTicket(int id, IProgressMonitor monitor) throws TracException {
+	public TracTicket getTicket(int id, IProgressMonitor monitor) throws PhabricatorException {
 		Object[] result = (Object[]) call(monitor, "ticket.get", id); //$NON-NLS-1$
 		TracTicket ticket = parseTicket(result);
 
@@ -643,7 +641,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 
 	/* public for testing */
 	@SuppressWarnings("unchecked")
-	public List<TracTicket> getTickets(int[] ids, IProgressMonitor monitor) throws TracException {
+	public List<TracTicket> getTickets(int[] ids, IProgressMonitor monitor) throws PhabricatorException {
 		Map<String, Object>[] calls = new Map[ids.length];
 		for (int i = 0; i < calls.length; i++) {
 			calls[i] = createMultiCall("ticket.get", ids[i]); //$NON-NLS-1$
@@ -662,20 +660,21 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	}
 
 	public void searchForTicketIds(TracSearch query, List<Integer> tickets, IProgressMonitor monitor)
-			throws TracException {
+			throws PhabricatorException {
 		// an empty query string is not valid, therefore prepend order
-		Object[] result = (Object[]) call(monitor,
-				"ticket.query", "order=id" + query.toQuery(supportsMaxSearchResults(monitor))); //$NON-NLS-1$ //$NON-NLS-2$
+		Object[] result = (Object[]) call(monitor, "ticket.query", //$NON-NLS-1$
+				"order=id" + query.toQuery(supportsMaxSearchResults(monitor))); //$NON-NLS-1$
 		for (Object item : result) {
 			tickets.add((Integer) item);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public void search(TracSearch query, List<TracTicket> tickets, IProgressMonitor monitor) throws TracException {
+	public void search(TracSearch query, List<TracTicket> tickets, IProgressMonitor monitor)
+			throws PhabricatorException {
 		// an empty query string is not valid, therefore prepend order
-		Object[] result = (Object[]) call(monitor,
-				"ticket.query", "order=id" + query.toQuery(supportsMaxSearchResults(monitor))); //$NON-NLS-1$ //$NON-NLS-2$
+		Object[] result = (Object[]) call(monitor, "ticket.query", //$NON-NLS-1$
+				"order=id" + query.toQuery(supportsMaxSearchResults(monitor))); //$NON-NLS-1$
 
 		Map<String, Object>[] calls = new Map[result.length];
 		for (int i = 0; i < calls.length; i++) {
@@ -689,11 +688,11 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	private boolean supportsWorkFlow(IProgressMonitor monitor) throws TracException {
+	private boolean supportsWorkFlow(IProgressMonitor monitor) throws PhabricatorException {
 		return isApiVersionOrHigher(1, 0, 1, monitor);
 	}
 
-	private boolean supportsMaxSearchResults(IProgressMonitor monitor) throws TracException {
+	private boolean supportsMaxSearchResults(IProgressMonitor monitor) throws PhabricatorException {
 		return isApiVersionOrHigher(1, 0, 0, monitor);
 	}
 
@@ -718,77 +717,77 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	}
 
 	@Override
-	public synchronized void updateAttributes(IProgressMonitor monitor) throws TracException {
+	public synchronized void updateAttributes(IProgressMonitor monitor) throws PhabricatorException {
 		monitor.beginTask("Updating attributes", 9); //$NON-NLS-1$
 
-		Object[] result = getAttributes("ticket.component", monitor); //$NON-NLS-1$
-		data.components = new ArrayList<TracComponent>(result.length);
-		for (Object item : result) {
-			data.components.add(parseComponent((Map<?, ?>) getMultiCallResult(item)));
-		}
+//		Object[] result = getAttributes("ticket.component", monitor); //$NON-NLS-1$
+//		data.components = new ArrayList<TracComponent>(result.length);
+//		for (Object item : result) {
+//			data.components.add(parseComponent((Map<?, ?>) getMultiCallResult(item)));
+//		}
 		advance(monitor, 1);
 
-		result = getAttributes("ticket.milestone", monitor); //$NON-NLS-1$
-		data.milestones = new ArrayList<TracMilestone>(result.length);
-		for (Object item : result) {
-			data.milestones.add(parseMilestone((Map<?, ?>) getMultiCallResult(item)));
-		}
+//		result = getAttributes("ticket.milestone", monitor); //$NON-NLS-1$
+//		data.milestones = new ArrayList<TracMilestone>(result.length);
+//		for (Object item : result) {
+//			data.milestones.add(parseMilestone((Map<?, ?>) getMultiCallResult(item)));
+//		}
 		advance(monitor, 1);
 
-		List<TicketAttributeResult> attributes = getTicketAttributes("ticket.priority", monitor); //$NON-NLS-1$
-		data.priorities = new ArrayList<TracPriority>(result.length);
-		for (TicketAttributeResult attribute : attributes) {
-			data.priorities.add(new TracPriority(attribute.name, attribute.value));
-		}
-		Collections.sort(data.priorities);
+//		List<TicketAttributeResult> attributes = getTicketAttributes("ticket.priority", monitor); //$NON-NLS-1$
+//		data.priorities = new ArrayList<TracPriority>(result.length);
+//		for (TicketAttributeResult attribute : attributes) {
+//			data.priorities.add(new TracPriority(attribute.name, attribute.value));
+//		}
+//		Collections.sort(data.priorities);
 		advance(monitor, 1);
 
-		attributes = getTicketAttributes("ticket.resolution", monitor); //$NON-NLS-1$
-		data.ticketResolutions = new ArrayList<TracTicketResolution>(result.length);
-		for (TicketAttributeResult attribute : attributes) {
-			data.ticketResolutions.add(new TracTicketResolution(attribute.name, attribute.value));
-		}
-		Collections.sort(data.ticketResolutions);
+//		attributes = getTicketAttributes("ticket.resolution", monitor); //$NON-NLS-1$
+//		data.ticketResolutions = new ArrayList<TracTicketResolution>(result.length);
+//		for (TicketAttributeResult attribute : attributes) {
+//			data.ticketResolutions.add(new TracTicketResolution(attribute.name, attribute.value));
+//		}
+//		Collections.sort(data.ticketResolutions);
 		advance(monitor, 1);
 
-		attributes = getTicketAttributes("ticket.severity", monitor); //$NON-NLS-1$
-		data.severities = new ArrayList<TracSeverity>(result.length);
-		for (TicketAttributeResult attribute : attributes) {
-			data.severities.add(new TracSeverity(attribute.name, attribute.value));
-		}
-		Collections.sort(data.severities);
+//		attributes = getTicketAttributes("ticket.severity", monitor); //$NON-NLS-1$
+//		data.severities = new ArrayList<TracSeverity>(result.length);
+//		for (TicketAttributeResult attribute : attributes) {
+//			data.severities.add(new TracSeverity(attribute.name, attribute.value));
+//		}
+//		Collections.sort(data.severities);
 		advance(monitor, 1);
 
-		boolean assignValues = isApiVersionOrHigher(1, 0, 0, monitor);
-		attributes = getTicketAttributes("ticket.status", assignValues, monitor); //$NON-NLS-1$
-		data.ticketStatus = new ArrayList<TracTicketStatus>(result.length);
-		for (TicketAttributeResult attribute : attributes) {
-			data.ticketStatus.add(new TracTicketStatus(attribute.name, attribute.value));
-		}
-		Collections.sort(data.ticketStatus);
+//		boolean assignValues = isApiVersionOrHigher(1, 0, 0, monitor);
+//		attributes = getTicketAttributes("ticket.status", assignValues, monitor); //$NON-NLS-1$
+//		data.ticketStatus = new ArrayList<TracTicketStatus>(result.length);
+//		for (TicketAttributeResult attribute : attributes) {
+//			data.ticketStatus.add(new TracTicketStatus(attribute.name, attribute.value));
+//		}
+//		Collections.sort(data.ticketStatus);
 		advance(monitor, 1);
 
-		attributes = getTicketAttributes("ticket.type", monitor); //$NON-NLS-1$
-		data.ticketTypes = new ArrayList<TracTicketType>(result.length);
-		for (TicketAttributeResult attribute : attributes) {
-			data.ticketTypes.add(new TracTicketType(attribute.name, attribute.value));
-		}
-		Collections.sort(data.ticketTypes);
+//		attributes = getTicketAttributes("ticket.type", monitor); //$NON-NLS-1$
+//		data.ticketTypes = new ArrayList<TracTicketType>(result.length);
+//		for (TicketAttributeResult attribute : attributes) {
+//			data.ticketTypes.add(new TracTicketType(attribute.name, attribute.value));
+//		}
+//		Collections.sort(data.ticketTypes);
 		advance(monitor, 1);
 
-		result = getAttributes("ticket.version", monitor); //$NON-NLS-1$
-		data.versions = new ArrayList<TracVersion>(result.length);
-		for (Object item : result) {
-			data.versions.add(parseVersion((Map<?, ?>) getMultiCallResult(item)));
-		}
+//		result = getAttributes("ticket.version", monitor); //$NON-NLS-1$
+//		data.versions = new ArrayList<TracVersion>(result.length);
+//		for (Object item : result) {
+//			data.versions.add(parseVersion((Map<?, ?>) getMultiCallResult(item)));
+//		}
 		advance(monitor, 1);
 
-		result = (Object[]) call(monitor, "ticket.getTicketFields"); //$NON-NLS-1$
-		data.ticketFields = new ArrayList<TracTicketField>(result.length);
-		data.ticketFieldByName = null;
-		for (Object item : result) {
-			data.ticketFields.add(parseTicketField((Map<?, ?>) item));
-		}
+//		result = (Object[]) call(monitor, "ticket.getTicketFields"); //$NON-NLS-1$
+//		data.ticketFields = new ArrayList<TracTicketField>(result.length);
+//		data.ticketFieldByName = null;
+//		for (Object item : result) {
+//			data.ticketFields.add(parseTicketField((Map<?, ?>) item));
+//		}
 		advance(monitor, 1);
 	}
 
@@ -854,7 +853,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	}
 
 	@SuppressWarnings("unchecked")
-	private Object[] getAttributes(String attributeType, IProgressMonitor monitor) throws TracException {
+	private Object[] getAttributes(String attributeType, IProgressMonitor monitor) throws PhabricatorException {
 		Object[] ids = (Object[]) call(monitor, attributeType + ".getAll"); //$NON-NLS-1$
 		Map<String, Object>[] calls = new Map[ids.length];
 		for (int i = 0; i < calls.length; i++) {
@@ -868,13 +867,13 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	}
 
 	private List<TicketAttributeResult> getTicketAttributes(String attributeType, IProgressMonitor monitor)
-			throws TracException {
+			throws PhabricatorException {
 		return getTicketAttributes(attributeType, false, monitor);
 	}
 
 	@SuppressWarnings("unchecked")
 	private List<TicketAttributeResult> getTicketAttributes(String attributeType, boolean assignValues,
-			IProgressMonitor monitor) throws TracException {
+			IProgressMonitor monitor) throws PhabricatorException {
 		// get list of attribute ids first
 		Object[] ids = (Object[]) call(monitor, attributeType + ".getAll"); //$NON-NLS-1$
 		// fetch all attributes in a single call
@@ -899,10 +898,10 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 				}
 				attributes.add(attribute);
 			} catch (ClassCastException e) {
-				StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN,
+				StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN,
 						"Invalid response from Trac repository for attribute type: '" + attributeType + "'", e)); //$NON-NLS-1$ //$NON-NLS-2$
 			} catch (NumberFormatException e) {
-				StatusHandler.log(new Status(IStatus.WARNING, TracCorePlugin.ID_PLUGIN,
+				StatusHandler.log(new Status(IStatus.WARNING, PhabricatorCorePlugin.ID_PLUGIN,
 						"Invalid response from Trac repository for attribute type: '" + attributeType + "'", e)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
@@ -910,18 +909,19 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return attributes;
 	}
 
-	public InputStream getAttachmentData(int ticketId, String filename, IProgressMonitor monitor) throws TracException {
+	public InputStream getAttachmentData(int ticketId, String filename, IProgressMonitor monitor)
+			throws PhabricatorException {
 		byte[] data = (byte[]) call(monitor, "ticket.getAttachment", ticketId, filename); //$NON-NLS-1$
 		return new ByteArrayInputStream(data);
 	}
 
 	public void putAttachmentData(int ticketId, String filename, String description, InputStream in,
-			IProgressMonitor monitor, boolean replace) throws TracException {
+			IProgressMonitor monitor, boolean replace) throws PhabricatorException {
 		byte[] data;
 		try {
 			data = readData(in, new NullProgressMonitor());
 		} catch (IOException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		}
 		call(monitor, "ticket.putAttachment", ticketId, filename, description, data, replace); //$NON-NLS-1$
 	}
@@ -947,13 +947,13 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 			try {
 				in.close();
 			} catch (IOException e) {
-				StatusHandler.log(new Status(IStatus.ERROR, TracCorePlugin.ID_PLUGIN,
-						"Error closing attachment stream", e)); //$NON-NLS-1$
+				StatusHandler
+						.log(new Status(IStatus.ERROR, PhabricatorCorePlugin.ID_PLUGIN, "Error closing attachment stream", e)); //$NON-NLS-1$
 			}
 		}
 	}
 
-	public void deleteAttachment(int ticketId, String filename, IProgressMonitor monitor) throws TracException {
+	public void deleteAttachment(int ticketId, String filename, IProgressMonitor monitor) throws PhabricatorException {
 		call(monitor, "ticket.deleteAttachment", ticketId, filename); //$NON-NLS-1$
 	}
 
@@ -965,7 +965,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 
 	}
 
-	public int createTicket(TracTicket ticket, IProgressMonitor monitor) throws TracException {
+	public int createTicket(TracTicket ticket, IProgressMonitor monitor) throws PhabricatorException {
 		Map<String, String> attributes = ticket.getValues();
 		String summary = attributes.remove(Key.SUMMARY.getKey());
 		String description = attributes.remove(Key.DESCRIPTION.getKey());
@@ -979,11 +979,11 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	private boolean supportsNotifications(IProgressMonitor monitor) throws TracException {
+	private boolean supportsNotifications(IProgressMonitor monitor) throws PhabricatorException {
 		return isApiVersionOrHigher(0, 0, 2, monitor);
 	}
 
-	public void updateTicket(TracTicket ticket, String comment, IProgressMonitor monitor) throws TracException {
+	public void updateTicket(TracTicket ticket, String comment, IProgressMonitor monitor) throws PhabricatorException {
 		updateAPIVersion(monitor);
 
 		Map<String, String> attributes = ticket.getValues();
@@ -1001,7 +1001,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	public Set<Integer> getChangedTickets(Date since, IProgressMonitor monitor) throws TracException {
+	public Set<Integer> getChangedTickets(Date since, IProgressMonitor monitor) throws PhabricatorException {
 		Object[] ids;
 		ids = (Object[]) call(monitor, "ticket.getRecentChanges", since); //$NON-NLS-1$
 		Set<Integer> result = new HashSet<Integer>();
@@ -1011,7 +1011,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return result;
 	}
 
-	public TracAction[] getActions(int id, IProgressMonitor monitor) throws TracException {
+	public TracAction[] getActions(int id, IProgressMonitor monitor) throws PhabricatorException {
 		if (supportsWorkFlow(monitor)) {
 			Object[] actions = (Object[]) call(monitor, "ticket.getActions", id); //$NON-NLS-1$
 			TracAction[] result = new TracAction[actions.length];
@@ -1052,22 +1052,22 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	public Date getTicketLastChanged(Integer id, IProgressMonitor monitor) throws TracException {
+	public Date getTicketLastChanged(Integer id, IProgressMonitor monitor) throws PhabricatorException {
 		Object[] result = (Object[]) call(monitor, "ticket.get", id); //$NON-NLS-1$
 		return parseDate(result[2]);
 	}
 
-	public void validateWikiRpcApi(IProgressMonitor monitor) throws TracException {
+	public void validateWikiRpcApi(IProgressMonitor monitor) throws PhabricatorException {
 		if (((Integer) call(monitor, "wiki.getRPCVersionSupported")) < 2) { //$NON-NLS-1$
 			validate(monitor);
 		}
 	}
 
-	public String wikiToHtml(String sourceText, IProgressMonitor monitor) throws TracException {
+	public String wikiToHtml(String sourceText, IProgressMonitor monitor) throws PhabricatorException {
 		return (String) call(monitor, "wiki.wikiToHtml", sourceText); //$NON-NLS-1$
 	}
 
-	public String[] getAllWikiPageNames(IProgressMonitor monitor) throws TracException {
+	public String[] getAllWikiPageNames(IProgressMonitor monitor) throws PhabricatorException {
 		Object[] result = (Object[]) call(monitor, "wiki.getAllPages"); //$NON-NLS-1$
 		String[] wikiPageNames = new String[result.length];
 		for (int i = 0; i < wikiPageNames.length; i++) {
@@ -1076,26 +1076,27 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return wikiPageNames;
 	}
 
-	public TracWikiPageInfo getWikiPageInfo(String pageName, IProgressMonitor monitor) throws TracException {
+	public TracWikiPageInfo getWikiPageInfo(String pageName, IProgressMonitor monitor) throws PhabricatorException {
 		return getWikiPageInfo(pageName, LATEST_VERSION, null);
 	}
 
 	public TracWikiPageInfo getWikiPageInfo(String pageName, int version, IProgressMonitor monitor)
-			throws TracException {
-		// Note: if an unexpected null value is passed to XmlRpcPlugin, XmlRpcClient will throw a TracRemoteException. 
+			throws PhabricatorException {
+		// Note: if an unexpected null value is passed to XmlRpcPlugin, XmlRpcClient will throw a TracRemoteException.
 		//       So, this null-parameter checking may be omitted if resorting to XmlRpcClient is more appropriate.
 		if (pageName == null) {
 			throw new IllegalArgumentException("Wiki page name cannot be null"); //$NON-NLS-1$
 		}
 
-		Object result = (version == LATEST_VERSION) ? call(monitor, "wiki.getPageInfo", pageName) // //$NON-NLS-1$
+		Object result = (version == LATEST_VERSION)
+				? call(monitor, "wiki.getPageInfo", pageName) // //$NON-NLS-1$
 				: call(monitor, "wiki.getPageInfoVersion", pageName, version); //$NON-NLS-1$
 		return parseWikiPageInfo(result);
 	}
 
 	@SuppressWarnings("unchecked")
 	public TracWikiPageInfo[] getWikiPageInfoAllVersions(String pageName, IProgressMonitor monitor)
-			throws TracException {
+			throws PhabricatorException {
 		TracWikiPageInfo latestVersion = getWikiPageInfo(pageName, null);
 		Map<String, Object>[] calls = new Map[latestVersion.getVersion() - 1];
 		for (int i = 0; i < calls.length; i++) {
@@ -1115,7 +1116,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	}
 
 	private TracWikiPageInfo parseWikiPageInfo(Object pageInfoResult) throws InvalidWikiPageException {
-		// Note: Trac XML-RPC Plugin returns 0 (as Integer) if pageName or version doesn't exist, 
+		// Note: Trac XML-RPC Plugin returns 0 (as Integer) if pageName or version doesn't exist,
 		//       and XmlRpcClient doesn't throw an Exception in this case
 		if (pageInfoResult instanceof Map<?, ?>) {
 			TracWikiPageInfo pageInfo = new TracWikiPageInfo();
@@ -1130,12 +1131,13 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	public String getWikiPageContent(String pageName, IProgressMonitor monitor) throws TracException {
+	public String getWikiPageContent(String pageName, IProgressMonitor monitor) throws PhabricatorException {
 		return getWikiPageContent(pageName, LATEST_VERSION, null);
 	}
 
-	public String getWikiPageContent(String pageName, int version, IProgressMonitor monitor) throws TracException {
-		// Note: if an unexpected null value is passed to XmlRpcPlugin, XmlRpcClient will throw a TracRemoteException. 
+	public String getWikiPageContent(String pageName, int version, IProgressMonitor monitor)
+			throws PhabricatorException {
+		// Note: if an unexpected null value is passed to XmlRpcPlugin, XmlRpcClient will throw a TracRemoteException.
 		//       So, this null-parameter checking may be omitted if resorting to XmlRpcClient is more appropriate.
 		if (pageName == null) {
 			throw new IllegalArgumentException("Wiki page name cannot be null"); //$NON-NLS-1$
@@ -1148,11 +1150,11 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	public String getWikiPageHtml(String pageName, IProgressMonitor monitor) throws TracException {
+	public String getWikiPageHtml(String pageName, IProgressMonitor monitor) throws PhabricatorException {
 		return getWikiPageHtml(pageName, LATEST_VERSION, null);
 	}
 
-	public String getWikiPageHtml(String pageName, int version, IProgressMonitor monitor) throws TracException {
+	public String getWikiPageHtml(String pageName, int version, IProgressMonitor monitor) throws PhabricatorException {
 		if (pageName == null) {
 			throw new IllegalArgumentException("Wiki page name cannot be null"); //$NON-NLS-1$
 		}
@@ -1165,7 +1167,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		}
 	}
 
-	public TracWikiPageInfo[] getRecentWikiChanges(Date since, IProgressMonitor monitor) throws TracException {
+	public TracWikiPageInfo[] getRecentWikiChanges(Date since, IProgressMonitor monitor) throws PhabricatorException {
 		if (since == null) {
 			throw new IllegalArgumentException("Date parameter cannot be null"); //$NON-NLS-1$
 		}
@@ -1178,11 +1180,12 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return changes;
 	}
 
-	public TracWikiPage getWikiPage(String pageName, IProgressMonitor monitor) throws TracException {
+	public TracWikiPage getWikiPage(String pageName, IProgressMonitor monitor) throws PhabricatorException {
 		return getWikiPage(pageName, LATEST_VERSION, null);
 	}
 
-	public TracWikiPage getWikiPage(String pageName, int version, IProgressMonitor monitor) throws TracException {
+	public TracWikiPage getWikiPage(String pageName, int version, IProgressMonitor monitor)
+			throws PhabricatorException {
 		TracWikiPage page = new TracWikiPage();
 		page.setPageInfo(getWikiPageInfo(pageName, version, null));
 		page.setContent(getWikiPageContent(pageName, version, null));
@@ -1190,18 +1193,18 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 		return page;
 	}
 
-	public boolean putWikipage(String pageName, String content, Map<String, Object> attributes, IProgressMonitor monitor)
-			throws TracException {
+	public boolean putWikipage(String pageName, String content, Map<String, Object> attributes,
+			IProgressMonitor monitor) throws PhabricatorException {
 		Boolean result = (Boolean) call(monitor, "wiki.putPage", pageName, content, attributes); //$NON-NLS-1$
 		return result.booleanValue();
 	}
 
-	public boolean deleteWikipage(String pageName, IProgressMonitor monitor) throws TracException {
+	public boolean deleteWikipage(String pageName, IProgressMonitor monitor) throws PhabricatorException {
 		Boolean result = (Boolean) call(monitor, "wiki.deletePage", pageName); //$NON-NLS-1$
 		return result.booleanValue();
 	}
 
-	public String[] listWikiPageAttachments(String pageName, IProgressMonitor monitor) throws TracException {
+	public String[] listWikiPageAttachments(String pageName, IProgressMonitor monitor) throws PhabricatorException {
 		Object[] result = (Object[]) call(monitor, "wiki.listAttachments", pageName); //$NON-NLS-1$
 		String[] attachments = new String[result.length];
 		for (int i = 0; i < attachments.length; i++) {
@@ -1211,7 +1214,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	}
 
 	public InputStream getWikiPageAttachmentData(String pageName, String fileName, IProgressMonitor monitor)
-			throws TracException {
+			throws PhabricatorException {
 		String attachmentName = pageName + "/" + fileName; //$NON-NLS-1$
 		byte[] data = (byte[]) call(monitor, "wiki.getAttachment", attachmentName); //$NON-NLS-1$
 		return new ByteArrayInputStream(data);
@@ -1221,7 +1224,7 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	 * Attach a file to a Wiki page on the repository.
 	 * <p>
 	 * This implementation uses the wiki.putAttachmentEx() call, which provides a richer functionality specific to Trac.
-	 * 
+	 *
 	 * @param pageName
 	 *            the name of the Wiki page
 	 * @param fileName
@@ -1236,20 +1239,20 @@ public class TracXmlRpcClient extends AbstractTracClient implements ITracWikiCli
 	 *         returned name is always the same as the argument <code>fileName</code>; if <code>replace</code> is
 	 *         <code>false</code> and an attachment with name <code>fileName</code> already exists, a number is appended
 	 *         to the file name (before suffix) and the generated filename of the attachment is returned.
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
 	public String putWikiPageAttachmentData(String pageName, String fileName, String description, InputStream in,
-			boolean replace, IProgressMonitor monitor) throws TracException {
+			boolean replace, IProgressMonitor monitor) throws PhabricatorException {
 		byte[] data;
 		try {
 			data = readData(in, new NullProgressMonitor());
 		} catch (IOException e) {
-			throw new TracException(e);
+			throw new PhabricatorException(e);
 		}
 		return (String) call(monitor, "wiki.putAttachmentEx", pageName, fileName, description, data, replace); //$NON-NLS-1$
 	}
 
-	public void deleteTicket(int ticketId, IProgressMonitor monitor) throws TracException {
+	public void deleteTicket(int ticketId, IProgressMonitor monitor) throws PhabricatorException {
 		call(monitor, "ticket.delete", ticketId); //$NON-NLS-1$
 	}
 

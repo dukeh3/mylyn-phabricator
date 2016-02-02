@@ -35,7 +35,7 @@ public class TracTaskListMigrator extends AbstractTaskListMigrator {
 
 	@Override
 	public String getConnectorKind() {
-		return TracCorePlugin.CONNECTOR_KIND;
+		return PhabricatorCorePlugin.CONNECTOR_KIND;
 	}
 
 	@Override
@@ -59,9 +59,9 @@ public class TracTaskListMigrator extends AbstractTaskListMigrator {
 	public void migrateTask(ITask task, Element element) {
 		String lastModDate = element.getAttribute(KEY_LAST_MOD_DATE);
 		task.setModificationDate(TracUtil.parseDate(lastModDate));
-		task.setAttribute(TracRepositoryConnector.TASK_KEY_UPDATE_DATE, lastModDate);
+		task.setAttribute(PhabricatorRepositoryConnector.TASK_KEY_UPDATE_DATE, lastModDate);
 		if (element.hasAttribute(KEY_SUPPORTS_SUBTASKS)) {
-			task.setAttribute(TracRepositoryConnector.TASK_KEY_SUPPORTS_SUBTASKS,
+			task.setAttribute(PhabricatorRepositoryConnector.TASK_KEY_SUPPORTS_SUBTASKS,
 					Boolean.valueOf(element.getAttribute(KEY_SUPPORTS_SUBTASKS)).toString());
 		}
 	}

@@ -25,7 +25,7 @@ public class WebSearchResultParser {
 
 	private final List<TracTicket> tickets = new ArrayList<TracTicket>();
 
-	public void parse(BufferedReader reader) throws IOException, TracException {
+	public void parse(BufferedReader reader) throws IOException, PhabricatorException {
 		Key[] fields = parseHeader(reader);
 		parseTickets(reader, fields);
 	}

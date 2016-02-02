@@ -35,19 +35,19 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return The HTML-formatted string of the wiki text
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 *             thrown in case of a connection error
 	 */
-	public String wikiToHtml(String sourceText, IProgressMonitor monitor) throws TracException;
+	public String wikiToHtml(String sourceText, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Validates the Trac XML-RPC WikiRPC API version of the repository
 	 * 
 	 * @param monitor
 	 *            TODO
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public void validateWikiRpcApi(IProgressMonitor monitor) throws TracException;
+	public void validateWikiRpcApi(IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the list of the names of all pages from the repository
@@ -55,9 +55,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return The array of the names of all Wiki pages
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public String[] getAllWikiPageNames(IProgressMonitor monitor) throws TracException;
+	public String[] getAllWikiPageNames(IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the latest version of a Wiki page from the repository
@@ -67,9 +67,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return the Wiki page at the latest version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public TracWikiPage getWikiPage(String pageName, IProgressMonitor monitor) throws TracException;
+	public TracWikiPage getWikiPage(String pageName, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets a specific version of a Wiki page from the repository
@@ -81,9 +81,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return the Wiki page at the specified version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public TracWikiPage getWikiPage(String pageName, int version, IProgressMonitor monitor) throws TracException;
+	public TracWikiPage getWikiPage(String pageName, int version, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the information about the latest version of a Wiki page from the repository
@@ -93,9 +93,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return The information about the page at the latest version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public TracWikiPageInfo getWikiPageInfo(String pageName, IProgressMonitor monitor) throws TracException;
+	public TracWikiPageInfo getWikiPageInfo(String pageName, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the information about the specified version of a Wiki page from the repository
@@ -107,10 +107,10 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return The information about the page at the specified version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
 	public TracWikiPageInfo getWikiPageInfo(String pageName, int version, IProgressMonitor monitor)
-			throws TracException;
+			throws PhabricatorException;
 
 	/**
 	 * Gets the information about all versions of a Wiki page from the repository
@@ -120,10 +120,10 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return array of TracWikiPageInfo that contains the information about all versions of the page
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
 	public TracWikiPageInfo[] getWikiPageInfoAllVersions(String pageName, IProgressMonitor monitor)
-			throws TracException;
+			throws PhabricatorException;
 
 	/**
 	 * Gets the raw Wiki text of the latest version of a Wiki page from the repository
@@ -133,9 +133,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return the raw Wiki text of the page, latest version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public String getWikiPageContent(String pageName, IProgressMonitor monitor) throws TracException;
+	public String getWikiPageContent(String pageName, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the raw Wiki text of the specified version of a Wiki page from the repository
@@ -147,9 +147,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return the raw Wiki text of the page, specified version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public String getWikiPageContent(String pageName, int version, IProgressMonitor monitor) throws TracException;
+	public String getWikiPageContent(String pageName, int version, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the rendered HTML of the latest version of a Wiki page from the repository
@@ -159,9 +159,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return the rendered HTML of the page, latest version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public String getWikiPageHtml(String pageName, IProgressMonitor monitor) throws TracException;
+	public String getWikiPageHtml(String pageName, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the rendered HTML of the specified version of a Wiki page from the repository
@@ -173,9 +173,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return the rendered HTML of the page, specified version
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public String getWikiPageHtml(String pageName, int version, IProgressMonitor monitor) throws TracException;
+	public String getWikiPageHtml(String pageName, int version, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the list of information about all pages that have been modified since a given date from the repository
@@ -185,9 +185,9 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return array of TracWikiPageInfo that contains the information about the modified pages
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public TracWikiPageInfo[] getRecentWikiChanges(Date since, IProgressMonitor monitor) throws TracException;
+	public TracWikiPageInfo[] getRecentWikiChanges(Date since, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Writes the content of a Wiki page to the repository
@@ -206,10 +206,10 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return <code>true</code> if successful
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
 	public boolean putWikipage(String pageName, String content, Map<String, Object> attributes, IProgressMonitor monitor)
-			throws TracException;
+			throws PhabricatorException;
 
 	/**
 	 * Gets the list of the names of attachments on a given Wiki page from the repository
@@ -220,9 +220,9 @@ public interface ITracWikiClient {
 	 *            TODO
 	 * @return an array of the names of attachments on the given page. Returns an empty array if the page has no
 	 *         attachment or the page does not exist.
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
-	public String[] listWikiPageAttachments(String pageName, IProgressMonitor monitor) throws TracException;
+	public String[] listWikiPageAttachments(String pageName, IProgressMonitor monitor) throws PhabricatorException;
 
 	/**
 	 * Gets the content of an attachment on a Wiki page from the repository
@@ -234,10 +234,10 @@ public interface ITracWikiClient {
 	 * @param monitor
 	 *            TODO
 	 * @return An InputStream of the content of the attachment
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
 	public InputStream getWikiPageAttachmentData(String pageName, String fileName, IProgressMonitor monitor)
-			throws TracException;
+			throws PhabricatorException;
 
 	/**
 	 * Attach a file to a Wiki page on the repository.
@@ -261,8 +261,8 @@ public interface ITracWikiClient {
 	 *         returned name is always the same as the argument <code>fileName</code>; if <code>replace</code> is
 	 *         <code>false</code> and an attachment with name <code>fileName</code> already exists, a different name is
 	 *         generated for the new attachment by the repository server and the new name is returned.
-	 * @throws TracException
+	 * @throws PhabricatorException
 	 */
 	public String putWikiPageAttachmentData(String pageName, String fileName, String description, InputStream in,
-			boolean replace, IProgressMonitor monitor) throws TracException;
+			boolean replace, IProgressMonitor monitor) throws PhabricatorException;
 }

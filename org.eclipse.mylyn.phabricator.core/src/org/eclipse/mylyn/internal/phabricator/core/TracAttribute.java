@@ -15,7 +15,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.mylyn.internal.phabricator.core.TracAttributeMapper.Flag;
+import org.eclipse.mylyn.internal.phabricator.core.PhabricatorAttributeMapper.Flag;
 import org.eclipse.mylyn.internal.phabricator.core.model.TracTicket.Key;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 
@@ -107,7 +107,7 @@ public enum TracAttribute {
 		this.prettyName = prettyName;
 		this.type = type;
 		if (firstFlag == null) {
-			this.flags = TracAttributeMapper.NO_FLAGS;
+			this.flags = PhabricatorAttributeMapper.NO_FLAGS;
 		} else {
 			this.flags = EnumSet.of(firstFlag, moreFlags);
 		}
